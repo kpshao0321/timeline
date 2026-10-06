@@ -13,7 +13,9 @@ import {
   Zap, 
   Tag, 
   X,
-  FileText
+  FileText,
+  Check,
+  FolderKanban
 } from 'lucide-react';
 import { formatChineseDate, getTodayDateString } from '../utils/dateUtils';
 import { useTranslation } from '../context/LanguageContext';
@@ -21,8 +23,11 @@ import { useTranslation } from '../context/LanguageContext';
 interface JournalViewProps {
   journals: JournalEntry[];
   projects: Project[];
+  departments?: string[];
   onSaveJournal: (entry: JournalEntry) => void;
   onDeleteJournal: (id: string) => void;
+  onSaveProject?: (project: Project) => void;
+  onAddDepartment?: (name: string) => void;
   selectedDateFilter?: string;
   onClearDateFilter?: () => void;
 }
@@ -30,8 +35,11 @@ interface JournalViewProps {
 export const JournalView: React.FC<JournalViewProps> = ({
   journals,
   projects,
+  departments: propDepartments = [],
   onSaveJournal,
   onDeleteJournal,
+  onSaveProject,
+  onAddDepartment,
   selectedDateFilter,
   onClearDateFilter,
 }) => {
@@ -42,14 +50,21 @@ export const JournalView: React.FC<JournalViewProps> = ({
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Departments list
+  // Quick project & category creation state
+  const [quickProjectMode, setQuickProjectMode] = useState<'none' | 'create' | 'edit'>('none');
+  const [quickProjName, setQuickProjName] = useState('');
+  const [quickProjDept, setQuickProjDept] = useState('');
+  const [quickProjCustomDept, setQuickProjCustomDept] = useState('');
+  const [quickProjColor, setQuickProjColor] = useState('#3B82F6');
+
+  // Unified departments list
   const departments = useMemo(() => {
-    const set = new Set<string>();
+    const set = new Set<string>(propDepartments);
     projects.forEach((p) => {
       if (p.department) set.add(p.department);
     });
     return Array.from(set);
-  }, [projects]);
+  }, [propDepartments, projects]);
 
   // Filtered journals
   const filteredJournals = useMemo(() => {
@@ -123,6 +138,52 @@ export const JournalView: React.FC<JournalViewProps> = ({
     });
     setIsModalOpen(false);
     setEditingEntry(null);
+  };
+
+  // Quick project & category helpers
+  const handleOpenQuickCreateProj = () => {
+    setQuickProjName('');
+    setQuickProjDept(departments[0] || (lang === 'zh' ? '研发部' : 'Engineering'));
+    setQuickProjCustomDept('');
+    setQuickProjColor('#3B82F6');
+    setQuickProjectMode('create');
+  };
+
+  const handleOpenQuickEditProj = () => {
+    if (!editingEntry) return;
+    const cur = projects.find((p) => p.id === editingEntry.projectId);
+    if (!cur) return;
+    setQuickProjName(cur.name);
+    setQuickProjDept(cur.department);
+    setQuickProjCustomDept('');
+    setQuickProjColor(cur.color);
+    setQuickProjectMode('edit');
+  };
+
+  const handleSaveQuickProj = () => {
+    if (!quickProjName.trim()) return;
+    const finalDept = quickProjCustomDept.trim() || quickProjDept.trim() || (lang === 'zh' ? '通用业务' : 'General');
+    if (finalDept && onAddDepartment) {
+      onAddDepartment(finalDept);
+    }
+    const currentProj = editingEntry ? projects.find((p) => p.id === editingEntry.projectId) : undefined;
+    const projId = quickProjectMode === 'edit' && currentProj ? currentProj.id : 'proj-' + Date.now();
+    const projToSave: Project = {
+      id: projId,
+      name: quickProjName.trim(),
+      department: finalDept,
+      description: quickProjectMode === 'edit' && currentProj ? currentProj.description : '',
+      status: 'active',
+      color: quickProjColor,
+      createdAt: quickProjectMode === 'edit' && currentProj ? currentProj.createdAt : new Date().toISOString().slice(0, 10),
+    };
+    if (onSaveProject) {
+      onSaveProject(projToSave);
+    }
+    if (editingEntry) {
+      setEditingEntry({ ...editingEntry, projectId: projId });
+    }
+    setQuickProjectMode('none');
   };
 
   // Quick template insertion
@@ -401,9 +462,31 @@ export const JournalView: React.FC<JournalViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    {t.belongProject}
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                      {t.belongProject}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleOpenQuickCreateProj}
+                        className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 cursor-pointer font-medium"
+                      >
+                        <Plus className="w-3 h-3" />
+                        {t.quickNewProject}
+                      </button>
+                      {projects.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleOpenQuickEditProj}
+                          className="text-[11px] text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 flex items-center gap-0.5 cursor-pointer"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                          {t.quickEditProject}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                   <select
                     value={editingEntry.projectId}
                     onChange={(e) => setEditingEntry({ ...editingEntry, projectId: e.target.value })}
@@ -419,6 +502,104 @@ export const JournalView: React.FC<JournalViewProps> = ({
                   </select>
                 </div>
               </div>
+
+              {/* Inline Quick Project & Category Creator / Editor */}
+              {quickProjectMode !== 'none' && (
+                <div className="p-3.5 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/20 space-y-3 animate-in fade-in">
+                  <div className="flex items-center justify-between text-xs font-semibold text-blue-900 dark:text-blue-300">
+                    <span className="flex items-center gap-1.5">
+                      <FolderKanban className="w-3.5 h-3.5" />
+                      {quickProjectMode === 'create' ? t.createProject : t.editProject}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQuickProjectMode('none')}
+                      className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1">
+                        {t.projectName}
+                      </label>
+                      <input
+                        type="text"
+                        value={quickProjName}
+                        onChange={(e) => setQuickProjName(e.target.value)}
+                        placeholder={lang === 'zh' ? '输入项目名称，例如: 国际化支付重构' : 'e.g. Payment Gateway V2'}
+                        className="w-full px-2.5 py-1.5 text-xs rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1">
+                        {t.projectDept} ({lang === 'zh' ? '点击选用或输入新类别' : 'Click or type new'})
+                      </label>
+                      {/* Existing categories badges */}
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {departments.map((dept) => (
+                          <button
+                            key={dept}
+                            type="button"
+                            onClick={() => {
+                              setQuickProjDept(dept);
+                              setQuickProjCustomDept('');
+                            }}
+                            className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                              quickProjDept === dept && !quickProjCustomDept
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300'
+                            }`}
+                          >
+                            {dept}
+                          </button>
+                        ))}
+                      </div>
+                      <input
+                        type="text"
+                        value={quickProjCustomDept}
+                        onChange={(e) => setQuickProjCustomDept(e.target.value)}
+                        placeholder={t.customCategoryPlaceholder}
+                        className="w-full px-2.5 py-1.5 text-xs rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-sans"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-2">
+                        <label className="text-[11px] text-neutral-600 dark:text-neutral-400">
+                          {t.projectColor}:
+                        </label>
+                        <input
+                          type="color"
+                          value={quickProjColor}
+                          onChange={(e) => setQuickProjColor(e.target.value)}
+                          className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setQuickProjectMode('none')}
+                          className="px-2.5 py-1 text-xs text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                        >
+                          {t.cancel}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSaveQuickProj}
+                          disabled={!quickProjName.trim()}
+                          className="px-3 py-1 text-xs font-medium rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50 cursor-pointer"
+                        >
+                          {quickProjectMode === 'create' ? (lang === 'zh' ? '创建并选用' : 'Create & Select') : t.saveProject}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Event Type & Location for Business Trip / Client Meeting */}
               <div className="grid grid-cols-2 gap-3">

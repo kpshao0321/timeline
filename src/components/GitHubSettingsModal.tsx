@@ -45,8 +45,13 @@ export const GitHubSettingsModal: React.FC<GitHubSettingsModalProps> = ({
   const { lang, t } = useTranslation();
   const [formData, setFormData] = useState<GitHubConfig>({ ...config });
   const [showToken, setShowToken] = useState(false);
-  const [testResult, setTestResult] = useState<{ success?: boolean; message?: string } | null>(null);
+  const [testResult, setTestResult] = useState<{ 
+    success?: boolean; 
+    message?: string; 
+    hasDataFile?: boolean;
+  } | null>(null);
   const [isTesting, setIsTesting] = useState(false);
+  const [isInitializingFile, setIsInitializingFile] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [isPushing, setIsPushing] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
@@ -59,9 +64,16 @@ export const GitHubSettingsModal: React.FC<GitHubSettingsModalProps> = ({
     try {
       const res = await GitHubService.verifyConnection(formData);
       if (res.success) {
+        let msg = lang === 'zh' ? `连接成功！已验证仓库: ${res.repoName}` : `Connection successful! Verified repository: ${res.repoName}`;
+        if (res.hasDataFile) {
+          msg += lang === 'zh' ? ' (检测到 data.json 已就绪 ✅)' : ' (data.json found ✅)';
+        } else {
+          msg += lang === 'zh' ? ' (仓库中尚未创建 data.json，可点击下方一键初始化)' : ' (data.json not found yet, click below to initialize)';
+        }
         setTestResult({
           success: true,
-          message: lang === 'zh' ? `连接成功！已验证仓库: ${res.repoName}` : `Connection successful! Verified repository: ${res.repoName}`,
+          message: msg,
+          hasDataFile: res.hasDataFile,
         });
       } else {
         setTestResult({
@@ -76,6 +88,23 @@ export const GitHubSettingsModal: React.FC<GitHubSettingsModalProps> = ({
       });
     } finally {
       setIsTesting(false);
+    }
+  };
+
+  const handleInitDataFile = async () => {
+    setIsInitializingFile(true);
+    try {
+      await GitHubService.saveRemoteData(formData, appData, undefined, 'Initialize data.json via Timeline');
+      setTestResult({
+        success: true,
+        message: lang === 'zh' ? '🎉 已成功在 GitHub 仓库创建并初始化 data.json！' : '🎉 Initialized data.json in repository successfully!',
+        hasDataFile: true,
+      });
+      onSaveConfig(formData);
+    } catch (err: any) {
+      alert((lang === 'zh' ? '初始化失败: ' : 'Failed to initialize: ') + err.message);
+    } finally {
+      setIsInitializingFile(false);
     }
   };
 
@@ -305,19 +334,42 @@ export const GitHubSettingsModal: React.FC<GitHubSettingsModalProps> = ({
             </button>
 
             {testResult && (
-              <div
-                className={`p-3 rounded-lg text-xs flex items-start gap-2 ${
-                  testResult.success
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                    : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
-                }`}
-              >
-                {testResult.success ? (
-                  <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
+              <div className="space-y-2">
+                <div
+                  className={`p-3 rounded-lg text-xs flex items-start gap-2 ${
+                    testResult.success
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                      : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                  }`}
+                >
+                  {testResult.success ? (
+                    <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
+                  )}
+                  <span className="flex-1">{testResult.message}</span>
+                </div>
+
+                {testResult.success && !testResult.hasDataFile && (
+                  <button
+                    type="button"
+                    onClick={handleInitDataFile}
+                    disabled={isInitializingFile}
+                    className="w-full py-2 px-3 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    {isInitializingFile ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        {lang === 'zh' ? '正在在 GitHub 创建 data.json...' : 'Creating data.json on GitHub...'}
+                      </>
+                    ) : (
+                      <>
+                        <Database className="w-3.5 h-3.5" />
+                        {t.initDataFileBtn}
+                      </>
+                    )}
+                  </button>
                 )}
-                <span className="flex-1">{testResult.message}</span>
               </div>
             )}
           </div>

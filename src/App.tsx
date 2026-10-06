@@ -161,12 +161,25 @@ function AppContent() {
     try {
       const result = await GitHubService.fetchRemoteData(config);
       if (result.isNewFile || !result.data) {
-        setSyncStatus({
-          state: 'success',
-          lastSyncedAt: new Date().toISOString(),
-          message: t.synced,
-        });
-        addToast(lang === 'zh' ? '仓库中未发现 data.json，首次保存时将自动建立' : 'File data.json will be initialized on first commit', 'info');
+        addToast(lang === 'zh' ? '检测到仓库尚未创建 data.json，正在自动创建并初始化...' : 'Initializing data.json on GitHub...', 'info');
+        try {
+          const initRes = await GitHubService.saveRemoteData(config, appData, undefined, 'Initialize data.json via Timeline');
+          setFileSha(initRes.sha);
+          localStorage.setItem(SHA_STORAGE_KEY, initRes.sha);
+          setSyncStatus({
+            state: 'success',
+            lastSyncedAt: new Date().toISOString(),
+            message: t.synced,
+            fileSha: initRes.sha,
+          });
+          addToast(lang === 'zh' ? '🎉 已在 GitHub 仓库成功创建并初始化 data.json！' : '🎉 Initialized data.json on GitHub repository successfully!', 'success');
+        } catch (initErr: any) {
+          setSyncStatus({
+            state: 'error',
+            message: initErr.message || t.syncError,
+          });
+          addToast(`${lang === 'zh' ? '初始化 data.json 失败：' : 'Failed to create data.json: '} ${initErr.message || ''}`, 'error');
+        }
       } else {
         const mergedData = result.data;
         setAppData(mergedData);
@@ -186,7 +199,7 @@ function AppContent() {
       });
       addToast(`${lang === 'zh' ? '拉取失败：' : 'Pull failed: '} ${err.message || ''}`, 'error');
     }
-  }, [githubConfig, saveToLocalStorage, addToast, lang, t]);
+  }, [appData, githubConfig, saveToLocalStorage, addToast, lang, t]);
 
   // Initial pull on mount if configured
   useEffect(() => {
@@ -276,6 +289,36 @@ function AppContent() {
     addToast(lang === 'zh' ? '项目及关联里程碑已删除' : 'Project and milestones deleted');
   };
 
+  // Department / Category operations
+  const handleAddDepartment = (deptName: string) => {
+    const trimmed = deptName.trim();
+    if (!trimmed) return;
+    updateDataAndSync((prev) => {
+      if (prev.departments.includes(trimmed)) return prev;
+      return { ...prev, departments: [...prev.departments, trimmed] };
+    });
+    addToast(lang === 'zh' ? `已添加类别 "${trimmed}"，全站已永久记住` : `Category "${trimmed}" added and remembered`);
+  };
+
+  const handleEditDepartment = (oldName: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === oldName) return;
+    updateDataAndSync((prev) => {
+      const departments = prev.departments.map((d) => (d === oldName ? trimmed : d));
+      const projects = prev.projects.map((p) => (p.department === oldName ? { ...p, department: trimmed } : p));
+      return { ...prev, departments, projects };
+    });
+    addToast(lang === 'zh' ? `类别已重命名为 "${trimmed}"` : `Category renamed to "${trimmed}"`);
+  };
+
+  const handleDeleteDepartment = (deptName: string) => {
+    updateDataAndSync((prev) => ({
+      ...prev,
+      departments: prev.departments.filter((d) => d !== deptName),
+    }));
+    addToast(lang === 'zh' ? `类别 "${deptName}" 已删除` : `Category "${deptName}" deleted`);
+  };
+
   // Milestone operations
   const handleSaveMilestone = (milestone: Milestone) => {
     updateDataAndSync((prev) => {
@@ -347,8 +390,11 @@ function AppContent() {
           <JournalView
             journals={appData.journals}
             projects={appData.projects}
+            departments={appData.departments}
             onSaveJournal={handleSaveJournal}
             onDeleteJournal={handleDeleteJournal}
+            onSaveProject={handleSaveProject}
+            onAddDepartment={handleAddDepartment}
             selectedDateFilter={selectedDateFilter}
             onClearDateFilter={() => setSelectedDateFilter(undefined)}
           />
@@ -364,6 +410,9 @@ function AppContent() {
             onDeleteProject={handleDeleteProject}
             onSaveMilestone={handleSaveMilestone}
             onDeleteMilestone={handleDeleteMilestone}
+            onAddDepartment={handleAddDepartment}
+            onEditDepartment={handleEditDepartment}
+            onDeleteDepartment={handleDeleteDepartment}
           />
         )}
 

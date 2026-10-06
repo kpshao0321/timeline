@@ -10,7 +10,9 @@ import {
   Circle, 
   Edit3, 
   Trash2, 
-  X
+  X,
+  Tag,
+  Check
 } from 'lucide-react';
 import { getDaysDiff } from '../utils/dateUtils';
 import { useTranslation } from '../context/LanguageContext';
@@ -24,6 +26,9 @@ interface ProjectMilestonesViewProps {
   onDeleteProject: (id: string) => void;
   onSaveMilestone: (milestone: Milestone) => void;
   onDeleteMilestone: (id: string) => void;
+  onAddDepartment?: (name: string) => void;
+  onEditDepartment?: (oldName: string, newName: string) => void;
+  onDeleteDepartment?: (name: string) => void;
 }
 
 export const ProjectMilestonesView: React.FC<ProjectMilestonesViewProps> = ({
@@ -35,11 +40,20 @@ export const ProjectMilestonesView: React.FC<ProjectMilestonesViewProps> = ({
   onDeleteProject,
   onSaveMilestone,
   onDeleteMilestone,
+  onAddDepartment,
+  onEditDepartment,
+  onDeleteDepartment,
 }) => {
   const { lang, t } = useTranslation();
   const [selectedDept, setSelectedDept] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'cards' | 'gantt'>('cards');
   
+  // Category management modal state
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [editingCategoryOldName, setEditingCategoryOldName] = useState<string | null>(null);
+  const [editingCategoryNewName, setEditingCategoryNewName] = useState('');
+
   // Project modal state
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
@@ -175,8 +189,16 @@ export const ProjectMilestonesView: React.FC<ProjectMilestonesViewProps> = ({
           </div>
 
           <button
+            onClick={() => setIsCategoryModalOpen(true)}
+            className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+          >
+            <Tag className="w-3.5 h-3.5" />
+            {t.manageCategories}
+          </button>
+
+          <button
             onClick={handleOpenNewProject}
-            className="px-3 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-100 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 shrink-0 shadow-xs"
+            className="px-3 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-100 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             {t.createProject}
@@ -382,7 +404,14 @@ export const ProjectMilestonesView: React.FC<ProjectMilestonesViewProps> = ({
               onSubmit={(e) => {
                 e.preventDefault();
                 if (!editingProject.name.trim()) return;
-                onSaveProject(editingProject);
+                const trimmedDept = editingProject.department.trim() || (lang === 'zh' ? '通用业务' : 'General');
+                if (trimmedDept && onAddDepartment) {
+                  onAddDepartment(trimmedDept);
+                }
+                onSaveProject({
+                  ...editingProject,
+                  department: trimmedDept,
+                });
                 setIsProjectModalOpen(false);
               }}
               className="space-y-3.5"
@@ -401,34 +430,48 @@ export const ProjectMilestonesView: React.FC<ProjectMilestonesViewProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    {t.projectDept}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={editingProject.department}
-                    onChange={(e) => setEditingProject({ ...editingProject, department: e.target.value })}
-                    placeholder={lang === 'zh' ? '技术中台 / 商业化' : 'Platform / Core Infra'}
-                    className="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-neutral-400"
-                  />
+              <div>
+                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                  {t.projectDept} ({lang === 'zh' ? '点击选用或输入新类别' : 'Click or type new'})
+                </label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {departments.map((dept) => (
+                    <button
+                      key={dept}
+                      type="button"
+                      onClick={() => setEditingProject({ ...editingProject, department: dept })}
+                      className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                        editingProject.department === dept
+                          ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-xs'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
+                      }`}
+                    >
+                      {dept}
+                    </button>
+                  ))}
                 </div>
+                <input
+                  type="text"
+                  required
+                  value={editingProject.department}
+                  onChange={(e) => setEditingProject({ ...editingProject, department: e.target.value })}
+                  placeholder={t.customCategoryPlaceholder}
+                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-neutral-400"
+                />
+              </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    {t.projectColor}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={editingProject.color}
-                      onChange={(e) => setEditingProject({ ...editingProject, color: e.target.value })}
-                      className="w-8 h-8 rounded border-0 cursor-pointer bg-transparent"
-                    />
-                    <span className="font-mono text-xs text-neutral-500">{editingProject.color}</span>
-                  </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                  {t.projectColor}
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={editingProject.color}
+                    onChange={(e) => setEditingProject({ ...editingProject, color: e.target.value })}
+                    className="w-8 h-8 rounded border-0 cursor-pointer bg-transparent"
+                  />
+                  <span className="font-mono text-xs text-neutral-500">{editingProject.color}</span>
                 </div>
               </div>
 
@@ -610,6 +653,163 @@ export const ProjectMilestonesView: React.FC<ProjectMilestonesViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Category / Department Management Modal */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#121316] rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-white font-display">
+                  {t.categoriesTitle}
+                </h3>
+                <p className="text-[11px] text-neutral-500 mt-0.5">
+                  {t.categoriesSubtitle}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setIsCategoryModalOpen(false);
+                  setEditingCategoryOldName(null);
+                }}
+                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Add New Category Input */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!newCategoryName.trim()) return;
+                if (onAddDepartment) {
+                  onAddDepartment(newCategoryName.trim());
+                }
+                setNewCategoryName('');
+              }}
+              className="flex items-center gap-2"
+            >
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder={t.categoryNamePlaceholder}
+                className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-neutral-400 font-sans"
+              />
+              <button
+                type="submit"
+                disabled={!newCategoryName.trim()}
+                className="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50 shrink-0 shadow-xs cursor-pointer"
+              >
+                {t.addCategoryBtn}
+              </button>
+            </form>
+
+            {/* List of current categories */}
+            <div className="space-y-2 max-h-60 overflow-y-auto pt-1">
+              <label className="block text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
+                {t.savedCategories} ({departments.length})
+              </label>
+              {departments.map((dept) => {
+                const projCount = projects.filter((p) => p.department === dept).length;
+                const isEditingThis = editingCategoryOldName === dept;
+
+                return (
+                  <div
+                    key={dept}
+                    className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800/80 text-xs"
+                  >
+                    {isEditingThis ? (
+                      <div className="flex items-center gap-1.5 flex-1 mr-2">
+                        <input
+                          type="text"
+                          value={editingCategoryNewName}
+                          onChange={(e) => setEditingCategoryNewName(e.target.value)}
+                          className="flex-1 px-2 py-1 text-xs rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editingCategoryNewName.trim() && onEditDepartment) {
+                              onEditDepartment(dept, editingCategoryNewName.trim());
+                            }
+                            setEditingCategoryOldName(null);
+                          }}
+                          className="p-1 text-emerald-600 hover:text-emerald-700"
+                          title="Save"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingCategoryOldName(null)}
+                          className="p-1 text-neutral-400 hover:text-neutral-600"
+                          title="Cancel"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-3.5 h-3.5 text-neutral-400" />
+                        <span className="font-medium text-neutral-800 dark:text-neutral-200">
+                          {dept}
+                        </span>
+                        <span className="text-[11px] text-neutral-400">
+                          ({projCount} {lang === 'zh' ? '个项目' : 'projects'})
+                        </span>
+                      </div>
+                    )}
+
+                    {!isEditingThis && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingCategoryOldName(dept);
+                            setEditingCategoryNewName(dept);
+                          }}
+                          className="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
+                          title="Edit"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(t.deleteCategoryConfirm.replace('{name}', dept))) {
+                              if (onDeleteDepartment) onDeleteDepartment(dept);
+                            }
+                          }}
+                          className="p-1 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCategoryModalOpen(false);
+                  setEditingCategoryOldName(null);
+                }}
+                className="px-4 py-1.5 text-xs font-medium rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors"
+              >
+                {t.cancel}
+              </button>
+            </div>
           </div>
         </div>
       )}

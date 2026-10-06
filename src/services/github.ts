@@ -36,9 +36,15 @@ export class GitHubService {
   }
 
   /**
-   * Verify repo access and permissions
+   * Verify repo access and permissions, and check if data.json exists
    */
-  static async verifyConnection(config: GitHubConfig): Promise<{ success: boolean; repoName?: string; error?: string }> {
+  static async verifyConnection(config: GitHubConfig): Promise<{ 
+    success: boolean; 
+    repoName?: string; 
+    error?: string;
+    hasDataFile?: boolean;
+    dataFileSha?: string;
+  }> {
     if (!config.token || !config.owner || !config.repo) {
       return { success: false, error: '请先填写完整的 Token、所有者 (Owner) 与仓库名 (Repo)' };
     }
@@ -62,9 +68,33 @@ export class GitHubService {
       }
 
       const repoInfo = await res.json();
+
+      // Check whether data.json already exists in the repo
+      const filePath = (config.path || 'data.json').replace(/^\/+/, '');
+      const branch = config.branch || 'main';
+      const fileUrl = `${url}/contents/${filePath}?ref=${encodeURIComponent(branch)}`;
+      
+      let hasDataFile = false;
+      let dataFileSha = '';
+      try {
+        const fileRes = await fetch(fileUrl, {
+          headers: this.getHeaders(config.token),
+          cache: 'no-store',
+        });
+        if (fileRes.ok) {
+          const fileInfo = await fileRes.json();
+          hasDataFile = true;
+          dataFileSha = fileInfo.sha || '';
+        }
+      } catch {
+        // file check failure is non-blocking
+      }
+
       return {
         success: true,
         repoName: repoInfo.full_name,
+        hasDataFile,
+        dataFileSha,
       };
     } catch (err: any) {
       return {
@@ -113,6 +143,7 @@ export class GitHubService {
 
   /**
    * Save (commit & push) data.json to GitHub repo
+   * Automatically probes remote file to avoid 409 conflict or missing SHA issues
    */
   static async saveRemoteData(
     config: GitHubConfig,
@@ -124,6 +155,26 @@ export class GitHubService {
     const branch = config.branch || 'main';
     const url = `https://api.github.com/repos/${encodeURIComponent(config.owner.trim())}/${encodeURIComponent(config.repo.trim())}/contents/${filePath}`;
 
+    // Probe GitHub remote to discover real file status
+    let targetSha = currentSha;
+    try {
+      const probeRes = await fetch(`${url}?ref=${encodeURIComponent(branch)}`, {
+        headers: this.getHeaders(config.token),
+        cache: 'no-store',
+      });
+      if (probeRes.ok) {
+        const fileData = await probeRes.json();
+        if (fileData.sha) {
+          targetSha = fileData.sha;
+        }
+      } else if (probeRes.status === 404) {
+        // File does not exist yet! Creating file must NOT provide SHA
+        targetSha = undefined;
+      }
+    } catch {
+      // Ignore probe network glitch and proceed
+    }
+
     const jsonString = JSON.stringify(data, null, 2);
     const base64Content = utf8ToBase64(jsonString);
 
@@ -133,8 +184,8 @@ export class GitHubService {
       branch: branch,
     };
 
-    if (currentSha) {
-      body.sha = currentSha;
+    if (targetSha) {
+      body.sha = targetSha;
     }
 
     const res = await fetch(url, {
@@ -146,7 +197,13 @@ export class GitHubService {
     if (!res.ok) {
       const err = await res.json().catch(() => ({ message: res.statusText }));
       if (res.status === 409) {
-        throw new Error('检测到版本冲突 (409 Conflict)：远程文件已被其他客户端更改，请先拉取最新数据。');
+        throw new Error('检测到版本冲突 (409 Conflict)：云端文件已被其他更新，请点击【从云端拉取】后再试。');
+      }
+      if (res.status === 404) {
+        throw new Error(`仓库 ${config.owner}/${config.repo} 或分支 ${branch} 不存在`);
+      }
+      if (res.status === 403 || res.status === 401) {
+        throw new Error(`Token 权限不足 (${res.status})：请在 GitHub Personal Access Token 中勾选 repo 权限（私有仓库读写权限）`);
       }
       throw new Error(err.message || `提交失败 HTTP ${res.status}`);
     }
