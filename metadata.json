@@ -1,0 +1,8 @@
+{
+  "name": "WorkPulse - 工作记录与项目全景看板",
+  "description": "基于 GitHub 云端同步的高效工作打卡、项目里程碑追踪与周月报自动化生成看板",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
