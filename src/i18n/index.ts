@@ -3,7 +3,7 @@ export type Language = 'zh' | 'en';
 export const translations = {
   zh: {
     // Navigation & Brand
-    brandName: 'WorkPulse',
+    brandName: 'Timeline',
     brandTagline: '极简工作记录与项目全景看板',
     overview: '概览看板',
     journals: '每日打卡',
@@ -195,7 +195,7 @@ export const translations = {
   },
   en: {
     // Navigation & Brand
-    brandName: 'WorkPulse',
+    brandName: 'Timeline',
     brandTagline: 'Minimalist Work Log & Project Cockpit',
     overview: 'Overview',
     journals: 'Daily Journal',

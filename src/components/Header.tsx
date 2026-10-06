@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { SyncStatus } from '../types';
 import { useTranslation } from '../context/LanguageContext';
+import { MichaelShaoLogo } from './MichaelShaoLogo';
 
 export type TabType = 'overview' | 'journals' | 'projects' | 'reports';
 
@@ -74,18 +75,19 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 w-full bg-white/80 dark:bg-[#0c0d0e]/80 backdrop-blur-xl border-b border-neutral-200/80 dark:border-neutral-800/80 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-15 flex items-center justify-between gap-4">
-        {/* Zone 1: Brand Wordmark (High-end font-display) */}
+        {/* Zone 1: Brand Logo & Title */}
         <div className="flex items-center gap-3">
           <button 
             onClick={() => onTabChange('overview')}
-            className="flex items-center gap-2.5 text-left focus:outline-none group"
+            className="flex items-center gap-2.5 text-left focus:outline-none group py-0.5 cursor-pointer"
+            title="Overview"
           >
-            <div className="w-7.5 h-7.5 rounded-lg bg-neutral-900 dark:bg-white flex items-center justify-center text-white dark:text-neutral-950 font-display font-bold text-sm tracking-tighter shadow-sm group-hover:scale-105 transition-transform">
-              W
+            <MichaelShaoLogo className="h-7 sm:h-8 w-auto text-neutral-900 dark:text-white transition-opacity group-hover:opacity-85" size={30} />
+            <div className="hidden sm:flex items-center pl-2 border-l border-neutral-300 dark:border-neutral-700">
+              <span className="font-display text-sm font-semibold tracking-tight text-neutral-600 dark:text-neutral-300">
+                {t.brandName}
+              </span>
             </div>
-            <span className="font-display text-base font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t.brandName}
-            </span>
           </button>
         </div>
 

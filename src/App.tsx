@@ -381,7 +381,7 @@ function AppContent() {
       <footer className="border-t border-neutral-200/80 dark:border-neutral-800/80 py-6 text-center text-xs text-neutral-400">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-neutral-800 dark:text-neutral-200 font-display">WorkPulse</span>
+            <span className="font-semibold text-neutral-800 dark:text-neutral-200 font-display">{t.brandName}</span>
             <span>·</span>
             <span>{t.brandTagline}</span>
           </div>

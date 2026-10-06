@@ -118,7 +118,7 @@ export class GitHubService {
     config: GitHubConfig,
     data: AppData,
     currentSha?: string,
-    commitMessage = 'Update work logs & milestones via WorkPulse'
+    commitMessage = 'Update work logs & milestones via Timeline'
   ): Promise<{ sha: string }> {
     const filePath = (config.path || 'data.json').replace(/^\/+/, '');
     const branch = config.branch || 'main';
