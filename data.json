@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-08T15:02:48.670Z",
+  "updatedAt": "2026-10-08T15:03:01.252Z",
   "departments": [
     "技术中台",
     "基础架构",
@@ -58,10 +58,8 @@
       "content": "Presentation",
       "hours": 8,
       "energyPercent": 100,
-      "tags": [
-        "需求推进"
-      ],
-      "updatedAt": "2026-10-08T15:02:48.670Z",
+      "tags": [],
+      "updatedAt": "2026-10-08T15:03:01.252Z",
       "eventType": "client_meeting"
     },
     {
