@@ -1,13 +1,24 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-08T14:50:44.177Z",
+  "updatedAt": "2026-10-08T14:54:01.543Z",
   "departments": [
     "技术中台",
     "基础架构",
     "业务研发",
-    "商业化产品"
+    "商业化产品",
+    "C6"
   ],
-  "projects": [],
+  "projects": [
+    {
+      "id": "proj-1791471241543",
+      "name": "1733-OO Swire Beijing SLT Adaptivr Reuse",
+      "department": "C6",
+      "description": "",
+      "status": "active",
+      "color": "#3B82F6",
+      "createdAt": "2026-10-08"
+    }
+  ],
   "milestones": [],
   "journals": [
     {
