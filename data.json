@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-08T14:56:41.536Z",
+  "updatedAt": "2026-10-08T14:56:54.229Z",
   "departments": [
     "技术中台",
     "基础架构",
@@ -18,10 +18,29 @@
       "status": "active",
       "color": "#3B82F6",
       "createdAt": "2026-10-08"
+    },
+    {
+      "id": "proj-1791471401536",
+      "name": "1719-00 CMG Shenzhen Ma Wan",
+      "department": "W",
+      "description": "",
+      "status": "active",
+      "color": "#bb58fd",
+      "createdAt": "2026-10-08"
     }
   ],
   "milestones": [],
   "journals": [
+    {
+      "id": "j-1791471381249",
+      "date": "2026-08-31",
+      "projectId": "proj-1791471401536",
+      "content": "Deck",
+      "hours": 8,
+      "energyPercent": 100,
+      "tags": [],
+      "updatedAt": "2026-10-08T14:56:54.229Z"
+    },
     {
       "id": "j-1791471267971",
       "date": "2026-10-06",
