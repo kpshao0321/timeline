@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-08T14:50:25.092Z",
+  "updatedAt": "2026-10-08T14:50:27.812Z",
   "departments": [
     "技术中台",
     "基础架构",
@@ -8,24 +8,6 @@
     "商业化产品"
   ],
   "projects": [
-    {
-      "id": "proj-trade",
-      "name": "核心交易与支付链路重构",
-      "department": "技术中台",
-      "description": "重构老旧交易结算状态机，支持多通道智能路由与高并发幂等处理。",
-      "status": "active",
-      "color": "#3B82F6",
-      "createdAt": "2026-08-01"
-    },
-    {
-      "id": "proj-ai-agent",
-      "name": "智能客服工单 Copilot",
-      "department": "商业化产品",
-      "description": "基于大模型与业务知识库的工单自动分类、答复建议与意图识别。",
-      "status": "active",
-      "color": "#8B5CF6",
-      "createdAt": "2026-09-01"
-    },
     {
       "id": "proj-infra-build",
       "name": "前端基础设施与打包提速 v3",
@@ -37,64 +19,6 @@
     }
   ],
   "milestones": [
-    {
-      "id": "ms-1",
-      "projectId": "proj-trade",
-      "title": "结算状态机压测与单机吞吐瓶颈分析",
-      "dueDate": "2026-10-12",
-      "status": "in_progress",
-      "eventType": "regular",
-      "notes": "目标单机 TPS 提升至 8500，且在 Redis 降级场景下保障强一致性。"
-    },
-    {
-      "id": "ms-trip-1",
-      "projectId": "proj-trade",
-      "title": "赴上海银行客户现场对齐生产双活技术方案",
-      "dueDate": "2026-10-02",
-      "completedDate": "2026-10-02",
-      "status": "completed",
-      "eventType": "client_meeting",
-      "location": "上海 / 浦东客户现场",
-      "notes": "同银行技术总监及架构师现场封闭评审两地三中心网络容灾方案。"
-    },
-    {
-      "id": "ms-2",
-      "projectId": "proj-trade",
-      "title": "主备通道自动熔断与灰度切流 5%",
-      "dueDate": "2026-10-25",
-      "status": "todo",
-      "eventType": "regular",
-      "notes": "依赖风控新接口上线，联合 QA 与业务组共同演练。"
-    },
-    {
-      "id": "ms-5",
-      "projectId": "proj-ai-agent",
-      "title": "检索增强生成（RAG）知识库准确率调优",
-      "dueDate": "2026-10-03",
-      "completedDate": "2026-10-04",
-      "status": "completed",
-      "eventType": "regular",
-      "notes": "Top-3 召回率从 72% 提升至 89.4%。"
-    },
-    {
-      "id": "ms-trip-3",
-      "projectId": "proj-ai-agent",
-      "title": "深圳大客户智能客服工作台验收答辩与签约",
-      "dueDate": "2026-10-18",
-      "status": "in_progress",
-      "eventType": "client_meeting",
-      "location": "深圳 / 客户集团总部",
-      "notes": "现场演示工单意图识别流式交互，配合商务进行终验评审。"
-    },
-    {
-      "id": "ms-6",
-      "projectId": "proj-ai-agent",
-      "title": "客服工作台内测版交互联调与安全合规审查",
-      "dueDate": "2026-10-15",
-      "status": "in_progress",
-      "eventType": "regular",
-      "notes": "重点审查敏感词脱敏逻辑及操作审计日志。"
-    },
     {
       "id": "ms-trip-4",
       "projectId": "proj-infra-build",
