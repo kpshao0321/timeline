@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-08T15:04:05.896Z",
+  "updatedAt": "2026-10-08T15:04:40.675Z",
   "departments": [
     "技术中台",
     "基础架构",
@@ -69,8 +69,9 @@
       "hours": 8,
       "energyPercent": 100,
       "tags": [],
-      "updatedAt": "2026-10-08T15:03:01.252Z",
-      "eventType": "client_meeting"
+      "updatedAt": "2026-10-08T15:04:40.675Z",
+      "eventType": "client_meeting",
+      "location": "Zhongshan"
     },
     {
       "id": "j-1791471601760",
