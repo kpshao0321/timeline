@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-08T14:54:08.954Z",
+  "updatedAt": "2026-10-08T14:54:21.395Z",
   "departments": [
     "技术中台",
     "基础架构",
@@ -30,18 +30,6 @@
       "energyPercent": 100,
       "tags": [],
       "updatedAt": "2026-10-08T14:54:08.954Z"
-    },
-    {
-      "id": "j-1791300775962",
-      "date": "2026-10-06",
-      "projectId": "proj-trade",
-      "content": "12",
-      "hours": 6,
-      "energyPercent": 80,
-      "tags": [
-        "需求推进"
-      ],
-      "updatedAt": "2026-10-06T15:33:00.241Z"
     }
   ]
 }
