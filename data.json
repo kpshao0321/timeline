@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-08T15:02:28.870Z",
+  "updatedAt": "2026-10-08T15:02:48.670Z",
   "departments": [
     "技术中台",
     "基础架构",
@@ -38,10 +38,32 @@
       "status": "active",
       "color": "#f73b57",
       "createdAt": "2026-10-08"
+    },
+    {
+      "id": "proj-1791471748870",
+      "name": "1735-00 Zhongshan Lihe",
+      "department": "C5",
+      "description": "",
+      "status": "active",
+      "color": "#489d76",
+      "createdAt": "2026-10-08"
     }
   ],
   "milestones": [],
   "journals": [
+    {
+      "id": "j-1791471672205",
+      "date": "2026-08-27",
+      "projectId": "proj-1791471748870",
+      "content": "Presentation",
+      "hours": 8,
+      "energyPercent": 100,
+      "tags": [
+        "需求推进"
+      ],
+      "updatedAt": "2026-10-08T15:02:48.670Z",
+      "eventType": "client_meeting"
+    },
     {
       "id": "j-1791471601760",
       "date": "2026-08-28",
