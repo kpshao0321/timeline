@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-06T15:33:00.241Z",
+  "updatedAt": "2026-10-08T14:50:25.092Z",
   "departments": [
     "技术中台",
     "基础架构",
@@ -16,15 +16,6 @@
       "status": "active",
       "color": "#3B82F6",
       "createdAt": "2026-08-01"
-    },
-    {
-      "id": "proj-observability",
-      "name": "全链路可观测性与智能告警",
-      "department": "基础架构",
-      "description": "接入 OpenTelemetry 统一 Trace/Metric 规范，搭建 P99 延迟异常检测机制。",
-      "status": "active",
-      "color": "#10B981",
-      "createdAt": "2026-08-15"
     },
     {
       "id": "proj-ai-agent",
@@ -74,36 +65,6 @@
       "status": "todo",
       "eventType": "regular",
       "notes": "依赖风控新接口上线，联合 QA 与业务组共同演练。"
-    },
-    {
-      "id": "ms-trip-2",
-      "projectId": "proj-observability",
-      "title": "杭州机房出差：核心集群网络容灾与全链路演练",
-      "dueDate": "2026-09-22",
-      "completedDate": "2026-09-23",
-      "status": "completed",
-      "eventType": "business_trip",
-      "location": "杭州 / 阿里云异地机房",
-      "notes": "入驻机房现场协同网络运营商进行光纤切断模拟和链路自动选路演练。"
-    },
-    {
-      "id": "ms-3",
-      "projectId": "proj-observability",
-      "title": "核心微服务 Jaeger Trace 全面打通",
-      "dueDate": "2026-09-28",
-      "completedDate": "2026-09-26",
-      "status": "completed",
-      "eventType": "regular",
-      "notes": "覆盖网关层、用户中心、订单池三大核心域。"
-    },
-    {
-      "id": "ms-4",
-      "projectId": "proj-observability",
-      "title": "核心 SLO 实时看板与告警静默规则配置",
-      "dueDate": "2026-10-09",
-      "status": "in_progress",
-      "eventType": "regular",
-      "notes": "梳理 P95、P99 告警阈值，避免告警风暴。"
     },
     {
       "id": "ms-5",
