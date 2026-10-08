@@ -1,45 +1,14 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-08T14:50:27.812Z",
+  "updatedAt": "2026-10-08T14:50:44.177Z",
   "departments": [
     "技术中台",
     "基础架构",
     "业务研发",
     "商业化产品"
   ],
-  "projects": [
-    {
-      "id": "proj-infra-build",
-      "name": "前端基础设施与打包提速 v3",
-      "department": "技术中台",
-      "description": "迁移 Vite 8 与模块预打包，将大型单体应用 CI/CD 构建时间压减至 45 秒内。",
-      "status": "completed",
-      "color": "#F59E0B",
-      "createdAt": "2026-07-20"
-    }
-  ],
-  "milestones": [
-    {
-      "id": "ms-trip-4",
-      "projectId": "proj-infra-build",
-      "title": "北京研发基地出差：跨区域基础设施架构协同闭门会",
-      "dueDate": "2026-11-05",
-      "status": "todo",
-      "eventType": "business_trip",
-      "location": "北京 / 研发创新中心",
-      "notes": "协同异地研发团队共建统一构建基础设施与制品库镜像同步。"
-    },
-    {
-      "id": "ms-7",
-      "projectId": "proj-infra-build",
-      "title": "CI/CD 构建流水线提速指标验收",
-      "dueDate": "2026-09-15",
-      "completedDate": "2026-09-14",
-      "status": "completed",
-      "eventType": "regular",
-      "notes": "整体产研团队每日省去构建等待时间约 1.2 小时。"
-    }
-  ],
+  "projects": [],
+  "milestones": [],
   "journals": [
     {
       "id": "j-1791300775962",
