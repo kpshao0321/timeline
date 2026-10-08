@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-08T14:58:18.854Z",
+  "updatedAt": "2026-10-08T14:59:04.210Z",
   "departments": [
     "技术中台",
     "基础架构",
@@ -41,6 +41,16 @@
   ],
   "milestones": [],
   "journals": [
+    {
+      "id": "j-1791471515266",
+      "date": "2026-08-18",
+      "projectId": "proj-1791471452194",
+      "content": "Ai rending",
+      "hours": 8,
+      "energyPercent": 100,
+      "tags": [],
+      "updatedAt": "2026-10-08T14:59:04.210Z"
+    },
     {
       "id": "j-1791471473174",
       "date": "2026-08-18",
